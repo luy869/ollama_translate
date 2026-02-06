@@ -6,7 +6,15 @@ import re
 
 import ollama
 import ollama_thinking  
-from vc_music import play_url_from_message
+from vc_music import (
+    play_url_from_message, 
+    skip_song, 
+    pause_song, 
+    resume_song, 
+    show_queue, 
+    clear_queue, 
+    disconnect_from_message
+)
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -41,8 +49,62 @@ async def on_message(message):
     elif message.channel.id != CHANNEL_ID:
         return
 
-    elif message.content.startswith(("!p", "！ｐ")):
-        await play_url_from_message(message, message.content[2:].strip())
+    # 音楽コマンド
+    elif message.content.startswith(("!p ", "！ｐ ")):
+        await play_url_from_message(message, message.content[3:].strip())
+        return
+    
+    elif message.content.startswith(("!skip", "！skip")):
+        await skip_song(message)
+        return
+    
+    elif message.content.startswith(("!pause", "！pause")):
+        await pause_song(message)
+        return
+    
+    elif message.content.startswith(("!resume", "！resume")):
+        await resume_song(message)
+        return
+    
+    elif message.content.startswith(("!queue", "！queue")):
+        await show_queue(message)
+        return
+    
+    elif message.content.startswith(("!clear", "！clear")):
+        await clear_queue(message)
+        return
+    
+    elif message.content.startswith(("!stop", "！stop", "!disconnect", "！disconnect")):
+        await disconnect_from_message(message)
+        return
+    
+    elif message.content.startswith(("!help", "！help", "!h", "！h")):
+        help_text = """
+📚 **Bot コマンド一覧**
+
+**🎵 音楽コマンド:**
+`!p [URL]` - 曲を再生/キューに追加（YouTubeのURLまたは再生リスト対応）
+`!skip` - 現在の曲をスキップ
+`!pause` - 再生を一時停止
+`!resume` - 再生を再開
+`!queue` - キューを表示
+`!clear` - キューをクリア
+`!stop` または `!disconnect` - 再生を停止してVCから切断
+
+**💬 翻訳機能:**
+テキストメッセージを送信すると自動的に翻訳されます
+• 日本語 → 韓国語
+• 韓国語 → 日本語
+
+**🤔 AI機能:**
+`?[質問]` - AI (Gemma 12B) に質問
+
+**ℹ️ その他:**
+`!help` - このヘルプを表示
+
+"""
+        await message.channel.send(help_text)
+        return
 
     # message_content を最初に初期化
     message_content = message.content
