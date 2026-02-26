@@ -43,7 +43,8 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    if message.author == client.user:
+    # 自分自身を含む、すべてのBOTからのメッセージを無視する
+    if message.author.bot:
         return
 
     elif message.channel.id != CHANNEL_ID:
